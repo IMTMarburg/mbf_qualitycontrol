@@ -75,11 +75,14 @@ def dump_cp_for_changed_images(generated_image_path, should_path):
     import shlex
 
     print("use %s to accept all image changes" % test_accept_image_path)
+    if not test_accept_image_path.exists():
+        test_accept_image_path.write_text("#!/usr/bin/sh\n")
     with open(test_accept_image_path, "a") as op:
         op.write(
             "cp %s %s\n"
             % (shlex.quote(str(generated_image_path)), shlex.quote(str(should_path)))
         )
+    test_accept_image_path.chmod(0o755)
 
 
 def assert_image_equal(generated_image_path, suffix="", tolerance=2, should_path=None):
