@@ -140,6 +140,9 @@ def assert_image_equal(generated_image_path, suffix="", tolerance=2, should_path
         raise ValueError(err)
 
 
-test_accept_image_path = Path("tests/run/accept_all_image_changes.sh").absolute()
+if Path('.').absolute().name == 'tests':
+    test_accept_image_path = Path("run/accept_all_image_changes.sh").absolute()
+else:
+    test_accept_image_path = Path("tests/run/accept_all_image_changes.sh").absolute()
 if test_accept_image_path.exists():
     test_accept_image_path.unlink()
