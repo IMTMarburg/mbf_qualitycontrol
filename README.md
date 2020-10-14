@@ -1,10 +1,5 @@
 # mbf_qualitycontrol
 
-| Build status: | [![Build
-Status](https://travis-ci.com/TyberiusPrime/mbf_qualitycontrol.svg?branch=master)](https://travis-ci.com/TyberiusPrime/mbf_qualitycontrol)|
-|---------------|-----------------------------------------------------------------------------|
-| Documentation | https://mbf_qualitycontrol.readthedocs.io/en/latest/
+Qualitycontrol for mbf_* packages
 
-
-qualitycontrol for mbf_* packages
-
+Part of the mbf_* suite from https://github.com/IMTMarburg
