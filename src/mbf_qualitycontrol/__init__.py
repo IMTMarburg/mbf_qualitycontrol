@@ -71,5 +71,22 @@ class QCCollectingJob(ppg.FileGeneratingJob):
             self.depends_on(
                 ppg.FunctionInvariant(self.job_id + "_func", self.inner_callback)
             )
+            names = []
+            for obj in self.objects:
+                if hasattr(obj, 'name'):
+                    names.append(obj.name)
+                elif hasattr(obj, 'columns'):
+                    names.append(obj.columns[0])
+                else:
+                    print(type(obj))
+                    raise ValueError(dir(obj))
+            self.depends_on(
+                ppg.ParameterInvariant(
+                    self.job_id,
+                    tuple(
+                        sorted(names)
+                    ),
+                )
+            )
         else:
             pass
