@@ -4,6 +4,9 @@
 # import pytest
 import sys
 from pathlib import Path
+import pypipegraph2 as ppg2  # noqa: F401
+
+ppg2.replace_ppg1()
 
 from pypipegraph.testing.fixtures import (  # noqa:F401
     new_pipegraph,

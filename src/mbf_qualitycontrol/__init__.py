@@ -13,9 +13,11 @@ def register_qc(job):
         or not getattr(ppg.util.global_pipegraph, "_qc_keep_function")(job)
     ):
         job.prune()
-    for attr in dir(job):
-        if isinstance(getattr(job, attr), ppg.Job):
-            register_qc(getattr(job, attr))
+    for attr in ["lfg", "cache_job", "table_job"]:
+        j = getattr(job, attr, None)
+        if j is not None:
+            if isinstance(j, ppg.Job):
+                register_qc(j)
     return job
 
 
@@ -53,14 +55,29 @@ def get_qc_jobs():
 
 
 class QCCollectingJob(ppg.FileGeneratingJob):
-    def __init__(self, job_id, callback):
-        if ppg.job.was_inited_before(self, QCCollectingJob):
+    def __init__(self, job_id, callback, depends_on_function=True):
+        # if ppg.job.was_inited_before(self, QCCollectingJob):
+        if hasattr(self, "inner_callback"):
             return
         self.inner_callback = callback
-        super().__init__(
-            job_id, lambda output_filename: callback(output_filename, self.objects)
-        )
+
+        def cb(output_filename):
+            callback(output_filename, self.objects)
+
         self.objects = []
+        if hasattr(ppg, "is_ppg2"):
+            import pypipegraph2 as ppg2
+
+            ppg2.jobs._mark_function_wrapped(cb, self.inner_callback)
+            super().__init__(job_id, cb)
+            if not depends_on_function:
+                self._ignore_code_changes()
+            else:
+                self.do_ignore_code_changes = False
+                self.depends_on(self._create_parameter_dependency)
+                self._handle_function_dependency(self.generating_function)
+        else:
+            super().__init__(job_id, cb)
 
     def add(self, obj):
         self.objects.append(obj)
@@ -71,22 +88,21 @@ class QCCollectingJob(ppg.FileGeneratingJob):
             self.depends_on(
                 ppg.FunctionInvariant(self.job_id + "_func", self.inner_callback)
             )
-            names = []
-            for obj in self.objects:
-                if hasattr(obj, 'name'):
-                    names.append(obj.name)
-                elif hasattr(obj, 'columns'):
-                    names.append(obj.columns[0])
-                else:
-                    print(type(obj))
-                    raise ValueError(dir(obj))
-            self.depends_on(
-                ppg.ParameterInvariant(
-                    self.job_id,
-                    tuple(
-                        sorted(names)
-                    ),
-                )
+            self._create_parameter_dependency()
+
+    def _create_parameter_dependency(self):
+        names = []
+        for obj in self.objects:
+            if hasattr(obj, "name"):
+                names.append(obj.name)
+            elif hasattr(obj, "columns"):
+                names.append(obj.columns[0])
+            else:
+                print(type(obj))
+                raise ValueError(dir(obj))
+        self.depends_on(
+            ppg.ParameterInvariant(
+                self.job_id,
+                tuple(sorted(names)),
             )
-        else:
-            pass
+        )
