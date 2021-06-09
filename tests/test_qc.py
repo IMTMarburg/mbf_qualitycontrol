@@ -60,13 +60,17 @@ class TestRegistration:
 
     def test_collecting_qc_job(self, new_pipegraph):
         def output(output_filename, elements):
-            Path(output_filename).write_text("\n".join(elements))
+            Path(output_filename).write_text("\n".join((e.name for e in elements)))
+
+        class Collectible:
+            def __init__(self, name):
+                self.name = name
 
         job = QCCollectingJob("output", output)
-        job.add("hello")
+        job.add(Collectible("hello"))
         job2 = QCCollectingJob("output", output)
         assert job2 is job
-        job.add("world")
+        job.add(Collectible("world"))
         ppg.run_pipegraph()
         assert Path("output").read_text() == "hello\nworld"
 
