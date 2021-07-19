@@ -68,7 +68,7 @@ class QCCollectingJob(ppg.FileGeneratingJob):
         if hasattr(ppg, "is_ppg2"):
             import pypipegraph2 as ppg2
 
-            ppg2.jobs._mark_function_wrapped(cb, self.inner_callback)
+            cb = ppg2.jobs._mark_function_wrapped(cb, self.inner_callback)
             super().__init__(job_id, cb)
             if not depends_on_function:
                 self._ignore_code_changes()
